@@ -1,2 +1,2 @@
 # solar-pv-performance-dashboard
-nalyzing solar PV generation data across two plants; trends, comparisons, and expected vs. actual output
+Analyzing solar PV generation data across two plants; trends, comparisons, and expected vs. actual output
