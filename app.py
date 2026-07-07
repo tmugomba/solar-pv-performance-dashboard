@@ -48,3 +48,41 @@ ax.set_xlabel("Date")
 ax.set_ylabel("Total AC Power (kW)")
 plt.xticks(rotation=45)
 st.pyplot(fig)
+# --- Irradiation vs. Power comparison ---
+st.subheader(f"{plant_choice} — Daily AC Power vs. Irradiation")
+
+# Pick the matching weather dataset based on the plant dropdown
+weather_data = weather_p1 if plant_choice == "Plant 1" else weather_p2
+
+# Aggregate generation data to one row per timestamp (summing all inverters)
+# This matches the structure of the weather data, which has one row per timestamp
+plant_total_power = gen_data.groupby('DATE_TIME')['AC_POWER'].sum().reset_index()
+
+# Merge power and irradiation on matching timestamps
+merged = pd.merge(
+    plant_total_power,
+    weather_data[['DATE_TIME', 'IRRADIATION']],
+    on='DATE_TIME',
+    how='inner'
+)
+
+# Aggregate to daily totals for both metrics
+merged['DATE'] = merged['DATE_TIME'].dt.date
+daily_comparison = merged.groupby('DATE')[['AC_POWER', 'IRRADIATION']].sum().reset_index()
+
+# Build the dual-axis chart (same style as your notebook version)
+fig2, ax1 = plt.subplots(figsize=(12, 4))
+
+ax1.plot(daily_comparison['DATE'], daily_comparison['AC_POWER'], color='tab:blue', marker='o', label='AC Power')
+ax1.set_xlabel('Date')
+ax1.set_ylabel('Total AC Power (kW)', color='tab:blue')
+ax1.tick_params(axis='y', labelcolor='tab:blue')
+
+ax2 = ax1.twinx()
+ax2.plot(daily_comparison['DATE'], daily_comparison['IRRADIATION'], color='tab:orange', marker='o', label='Irradiation')
+ax2.set_ylabel('Total Irradiation (kW/m²)', color='tab:orange')
+ax2.tick_params(axis='y', labelcolor='tab:orange')
+
+plt.xticks(rotation=45)
+fig2.tight_layout()
+st.pyplot(fig2)
