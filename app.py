@@ -105,3 +105,38 @@ ax2.tick_params(axis='y', labelcolor='tab:orange')
 plt.xticks(rotation=45)
 fig2.tight_layout()
 st.pyplot(fig2)
+# --- Inverter-level view ---
+st.subheader(f"{plant_choice} — Average Power by Inverter")
+
+# Filter generation data to the selected date range
+gen_data_for_inverters = gen_data[(gen_data['DATE'] >= date_range[0]) & (gen_data['DATE'] <= date_range[1])]
+
+# Average DC_POWER per inverter, sorted lowest to highest
+inverter_avg = gen_data_for_inverters.groupby('SOURCE_KEY')['DC_POWER'].mean().sort_values()
+
+# Build a color list: default blue for all bars, but red for lowest, green for highest
+bar_colors = ['steelblue'] * len(inverter_avg)
+bar_colors[0] = 'firebrick'    # lowest inverter (first in sorted list)
+bar_colors[-1] = 'seagreen'    # highest inverter (last in sorted list)
+
+fig3, ax3 = plt.subplots(figsize=(12, 5))
+bars = ax3.bar(inverter_avg.index, inverter_avg.values, color=bar_colors)
+ax3.set_xlabel("Inverter (SOURCE_KEY)")
+ax3.set_ylabel("Average DC Power (kW)")
+plt.xticks(rotation=90)
+
+# Add value labels directly above the lowest and highest bars, so they're easy to spot
+lowest_key = inverter_avg.index[0]
+highest_key = inverter_avg.index[-1]
+lowest_val = inverter_avg.iloc[0]
+highest_val = inverter_avg.iloc[-1]
+
+ax3.text(0, lowest_val + (highest_val * 0.02), f"Lowest: {lowest_key}\n({lowest_val:.0f} kW)",
+         ha='center', va='bottom', fontsize=9, color='firebrick', fontweight='bold')
+ax3.text(len(inverter_avg) - 1, highest_val + (highest_val * 0.02), f"Highest: {highest_key}\n({highest_val:.0f} kW)",
+         ha='center', va='bottom', fontsize=9, color='seagreen', fontweight='bold')
+
+fig3.tight_layout()
+st.pyplot(fig3)
+
+st.caption(f"Lowest performing inverter in this range: **{lowest_key}** ({lowest_val:.0f} kW) — Highest: **{highest_key}** ({highest_val:.0f} kW)")
