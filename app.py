@@ -8,6 +8,31 @@ st.set_page_config(page_title="Solar PV Performance Dashboard", layout="wide")
 st.title("☀️ Solar PV Performance Dashboard")
 st.write("Interactive analysis of two solar plants — generation trends, weather correlation, and fault detection.")
 
+# --- Key Findings Summary ---
+with st.expander("📊 Key Findings — click to expand", expanded=True):
+    st.markdown("""
+    **Plant 1 generation is weather-driven, not equipment-driven**
+    Daily AC power output tracks irradiation almost perfectly across the full 34-day period — 
+    no unexplained dips where irradiation stayed high but power dropped.
+
+    **Two Plant 1 inverters run consistently ~10-13% below plant average**
+    Inverters `bvBOhCH3iADSZry` and `1BY6WEcLGh8j5v7` underperform the plant average throughout 
+    the period. Inverter `1BY6WEcLGh8j5v7` also shows a sharp, isolated single-day anomaly on 
+    **June 13**, dropping to roughly 1,300 kW while the plant average stayed near 3,200 kW.
+
+    **Plant 2 experienced a temperature-driven mismatch, not an equipment fault**
+    Between **May 19–27**, Plant 2's irradiation stayed high while power output lagged. 
+    Checking inverter-by-inverter ruled out a single faulty unit — nearly all inverters were 
+    affected equally. Module temperature was 35.4°C during this window vs. 31.8°C for the rest 
+    of the period — a plausible thermal derating effect rather than a hardware issue.
+
+    **Plant 1 is genuinely more efficient than Plant 2 — not just larger**
+    Normalizing power output by irradiation (performance ratio) shows Plant 1 consistently 
+    achieves a higher ratio (~28,000–32,000) than Plant 2 (~17,000–25,000) across nearly the 
+    entire period, even though both plants receive similar sunlight. This points to a real 
+    efficiency gap — likely panel quality, installation angle, or site conditions — rather 
+    than Plant 1 simply having more capacity.
+    """)
 # --- Load and cache the data ---
 # @st.cache_data means this function only re-runs when the file changes,
 # not every single time the user interacts with the app (much faster)
