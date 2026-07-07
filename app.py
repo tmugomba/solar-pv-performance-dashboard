@@ -12,7 +12,7 @@ st.write("Interactive analysis of two solar plants — generation trends, weathe
 with st.expander("📊 Key Findings — click to expand", expanded=True):
     st.markdown("""
     **Plant 1 generation is weather-driven, not equipment-driven**
-    Daily AC power output tracks irradiation almost perfectly across the full 34-day period — 
+    Daily AC power output tracks irradiation almost perfectly across the full 34-day period, 
     no unexplained dips where irradiation stayed high but power dropped.
 
     **Two Plant 1 inverters run consistently ~10-13% below plant average**
@@ -22,15 +22,15 @@ with st.expander("📊 Key Findings — click to expand", expanded=True):
 
     **Plant 2 experienced a temperature-driven mismatch, not an equipment fault**
     Between **May 19–27**, Plant 2's irradiation stayed high while power output lagged. 
-    Checking inverter-by-inverter ruled out a single faulty unit — nearly all inverters were 
+    Checking inverter-by-inverter ruled out a single faulty unit, nearly all inverters were 
     affected equally. Module temperature was 35.4°C during this window vs. 31.8°C for the rest 
-    of the period — a plausible thermal derating effect rather than a hardware issue.
+    of the period, a plausible thermal derating effect rather than a hardware issue.
 
     **Plant 1 is genuinely more efficient than Plant 2 — not just larger**
     Normalizing power output by irradiation (performance ratio) shows Plant 1 consistently 
     achieves a higher ratio (~28,000–32,000) than Plant 2 (~17,000–25,000) across nearly the 
     entire period, even though both plants receive similar sunlight. This points to a real 
-    efficiency gap — likely panel quality, installation angle, or site conditions — rather 
+    efficiency gap, likely panel quality, installation angle, or site conditions, rather 
     than Plant 1 simply having more capacity.
     """)
 # --- Load and cache the data ---
@@ -165,3 +165,32 @@ fig3.tight_layout()
 st.pyplot(fig3)
 
 st.caption(f"Lowest performing inverter in this range: **{lowest_key}** ({lowest_val:.0f} kW) — Highest: **{highest_key}** ({highest_val:.0f} kW)")
+# --- Performance Ratio: Plant 1 vs Plant 2 ---
+st.subheader("Performance Ratio Comparison: Plant 1 vs. Plant 2")
+st.caption("Performance ratio = AC Power ÷ Irradiation — normalizes output by weather, showing true efficiency regardless of system size.")
+
+# Build merged power+irradiation data for BOTH plants (not just the selected one)
+def get_daily_performance_ratio(gen_df, weather_df):
+    total_power = gen_df.groupby('DATE_TIME')['AC_POWER'].sum().reset_index()
+    merged = pd.merge(total_power, weather_df[['DATE_TIME', 'IRRADIATION']], on='DATE_TIME', how='inner')
+    merged['DATE'] = merged['DATE_TIME'].dt.date
+    daily = merged.groupby('DATE')[['AC_POWER', 'IRRADIATION']].sum().reset_index()
+    daily['PERFORMANCE_RATIO'] = daily['AC_POWER'] / daily['IRRADIATION']
+    return daily
+
+daily_ratio_p1 = get_daily_performance_ratio(gen_p1, weather_p1)
+daily_ratio_p2 = get_daily_performance_ratio(gen_p2, weather_p2)
+
+# Filter both to the selected date range so this chart respects the slider too
+daily_ratio_p1_filtered = daily_ratio_p1[(daily_ratio_p1['DATE'] >= date_range[0]) & (daily_ratio_p1['DATE'] <= date_range[1])]
+daily_ratio_p2_filtered = daily_ratio_p2[(daily_ratio_p2['DATE'] >= date_range[0]) & (daily_ratio_p2['DATE'] <= date_range[1])]
+
+fig4, ax4 = plt.subplots(figsize=(12, 4))
+ax4.plot(daily_ratio_p1_filtered['DATE'], daily_ratio_p1_filtered['PERFORMANCE_RATIO'], marker='o', label='Plant 1', color='tab:blue')
+ax4.plot(daily_ratio_p2_filtered['DATE'], daily_ratio_p2_filtered['PERFORMANCE_RATIO'], marker='o', label='Plant 2', color='tab:green')
+ax4.set_xlabel('Date')
+ax4.set_ylabel('Performance Ratio (kW per kW/m²)')
+plt.xticks(rotation=45)
+ax4.legend()
+fig4.tight_layout()
+st.pyplot(fig4)
