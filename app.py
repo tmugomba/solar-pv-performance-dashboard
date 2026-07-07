@@ -29,18 +29,36 @@ def load_data():
 
 gen_p1, gen_p2, weather_p1, weather_p2 = load_data()
 
-# --- Sidebar: plant selector (this is the first interactive control) ---
+# --- Sidebar: plant selector ---
 st.sidebar.header("Controls")
 plant_choice = st.sidebar.selectbox("Select Plant", ["Plant 1", "Plant 2"])
 
 # Pick the right dataset based on the dropdown selection
 gen_data = gen_p1 if plant_choice == "Plant 1" else gen_p2
+weather_data = weather_p1 if plant_choice == "Plant 1" else weather_p2
+
+# Add a DATE column (date only, no time) for grouping and filtering
+gen_data['DATE'] = gen_data['DATE_TIME'].dt.date
+
+# --- Sidebar: date range slider ---
+# Get the min and max dates available in the dataset, so the slider bounds match the real data
+min_date = gen_data['DATE'].min()
+max_date = gen_data['DATE'].max()
+
+date_range = st.sidebar.slider(
+    "Select Date Range",
+    min_value=min_date,
+    max_value=max_date,
+    value=(min_date, max_date)  # default: show the full range
+)
+
+# Filter gen_data to only the selected date range - used by the first chart
+gen_data_filtered = gen_data[(gen_data['DATE'] >= date_range[0]) & (gen_data['DATE'] <= date_range[1])]
 
 # --- Daily generation trend chart ---
 st.subheader(f"{plant_choice} — Daily Total AC Power Generation")
 
-gen_data['DATE'] = gen_data['DATE_TIME'].dt.date
-daily_total = gen_data.groupby('DATE')['AC_POWER'].sum()
+daily_total = gen_data_filtered.groupby('DATE')['AC_POWER'].sum()
 
 fig, ax = plt.subplots(figsize=(12, 4))
 ax.plot(daily_total.index, daily_total.values, marker='o')
@@ -48,11 +66,9 @@ ax.set_xlabel("Date")
 ax.set_ylabel("Total AC Power (kW)")
 plt.xticks(rotation=45)
 st.pyplot(fig)
+
 # --- Irradiation vs. Power comparison ---
 st.subheader(f"{plant_choice} — Daily AC Power vs. Irradiation")
-
-# Pick the matching weather dataset based on the plant dropdown
-weather_data = weather_p1 if plant_choice == "Plant 1" else weather_p2
 
 # Aggregate generation data to one row per timestamp (summing all inverters)
 # This matches the structure of the weather data, which has one row per timestamp
@@ -66,11 +82,14 @@ merged = pd.merge(
     how='inner'
 )
 
-# Aggregate to daily totals for both metrics
+# Add DATE column, then filter merged data to the selected date range
 merged['DATE'] = merged['DATE_TIME'].dt.date
-daily_comparison = merged.groupby('DATE')[['AC_POWER', 'IRRADIATION']].sum().reset_index()
+merged_filtered = merged[(merged['DATE'] >= date_range[0]) & (merged['DATE'] <= date_range[1])]
 
-# Build the dual-axis chart (same style as your notebook version)
+# Aggregate to daily totals for both metrics
+daily_comparison = merged_filtered.groupby('DATE')[['AC_POWER', 'IRRADIATION']].sum().reset_index()
+
+# Build the dual-axis chart
 fig2, ax1 = plt.subplots(figsize=(12, 4))
 
 ax1.plot(daily_comparison['DATE'], daily_comparison['AC_POWER'], color='tab:blue', marker='o', label='AC Power')
