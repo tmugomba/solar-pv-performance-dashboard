@@ -61,3 +61,11 @@ solar-pv-performance-dashboard/
 ├── app.py          # Streamlit dashboard
 └── requirements.txt
 ```
+## About the author
+
+**Tendekai Mugomba** — Electrical engineering student passionate about renewable energy, building
+data science skills at the intersection of energy systems and machine learning. Currently gaining
+hands-on experience in solar PV analytics, M&V, and energy modeling, and building this portfolio to
+apply that growing skill set to broader ML-driven energy problems.
+
+[LinkedIn](https://www.linkedin.com/in/tendekai-mugomba) · [GitHub](https://github.com/tmugomba)
