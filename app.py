@@ -204,3 +204,12 @@ plt.xticks(rotation=45)
 ax4.legend()
 fig4.tight_layout()
 st.pyplot(fig4)
+
+st.markdown(
+    "<p style='color: #8593AD; font-size: 0.82rem; margin-top: 8px;'>"
+    "Built by Tendekai Mugomba — "
+    "<a href='https://www.linkedin.com/in/YOUR-LINKEDIN-HANDLE' style='color: #F2B705;'>LinkedIn</a> · "
+    "<a href='https://github.com/tmugomba' style='color: #F2B705;'>GitHub</a>"
+    "</p>",
+    unsafe_allow_html=True
+)
