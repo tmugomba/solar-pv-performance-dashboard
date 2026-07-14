@@ -1,6 +1,6 @@
 # ☀️ Solar PV Performance Dashboard
 
-**[🔗 Live Interactive Dashboard] https://solar-pv-performance-dashboard-hd3ujgp4tmv2zrcurezp67.streamlit.app/** — click to explore
+**[🔗 Live Interactive Dashboard] https://solar-pv-performance-dashboard.streamlit.app/** — click to explore
 
 An interactive dashboard analyzing solar PV generation performance across two solar plants, built to replicate real-world solar analytics workflows — daily production trends, weather correlation, inverter-level fault detection, and cross-plant efficiency comparison.
 
